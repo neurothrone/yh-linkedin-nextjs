@@ -1,7 +1,6 @@
 "use client";
 
 import { Session } from "next-auth";
-import Image from "next/image";
 import { SignOutButton } from "./SignOutButton";
 import { useEffect, useState } from "react";
 
@@ -47,12 +46,14 @@ export function UserProfile({ session }: UserProfileProps) {
       <div className="flex flex-col items-center space-y-4">
         {imgSrc ? (
           <div className="relative h-32 w-32 rounded-full overflow-hidden border-4 border-blue-100">
-            <Image
+            <img
               src={imgSrc}
               alt={user?.name || "Profile picture"}
-              fill
-              className="object-cover"
-              unoptimized={true}
+              className="absolute inset-0 w-full h-full object-cover"
+              onError={(e) => {
+                console.error("Failed to load image:", imgSrc);
+                e.currentTarget.style.display = "none";
+              }}
             />
           </div>
         ) : (
@@ -97,6 +98,19 @@ export function UserProfile({ session }: UserProfileProps) {
           <div className="mt-2 pt-2 border-t border-gray-200">
             <p className="text-gray-800 font-medium mb-1">Image URL:</p>
             <p className="text-black break-all font-mono">{imgSrc}</p>
+            <div className="mt-2">
+              <p className="text-gray-800 font-medium mb-1">
+                Direct Image Link:
+              </p>
+              <a
+                href={imgSrc}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 underline break-all font-mono"
+              >
+                Open Image URL in New Tab
+              </a>
+            </div>
           </div>
         )}
       </div>
