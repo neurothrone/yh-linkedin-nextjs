@@ -3,7 +3,7 @@
 import { Session } from "next-auth";
 import Image from "next/image";
 import { SignOutButton } from "./SignOutButton";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface UserProfileProps {
   session: Session;
@@ -11,20 +11,45 @@ interface UserProfileProps {
 
 export function UserProfile({ session }: UserProfileProps) {
   const { user } = session;
+  const [imgSrc, setImgSrc] = useState<string | null>(null);
 
   useEffect(() => {
     // Log session data for debugging
     console.log("Session:", session);
-  }, [session]);
+
+    // Find and extract the image URL from session data
+    if (user?.image) {
+      setImgSrc(user.image);
+    } else if (user?.linkedInProfile?.picture) {
+      setImgSrc(user.linkedInProfile.picture);
+    } else if (typeof user?.linkedInProfile === "object") {
+      // Try to find any picture field in the LinkedIn profile data
+      const profileData = user.linkedInProfile;
+      const possibleImageKeys = [
+        "picture",
+        "profilePicture",
+        "profileImageUrl",
+        "photo",
+        "avatar",
+      ];
+
+      for (const key of possibleImageKeys) {
+        if (profileData[key]) {
+          setImgSrc(profileData[key]);
+          break;
+        }
+      }
+    }
+  }, [session, user]);
 
   return (
     <div className="w-full max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6 space-y-6">
       <div className="flex flex-col items-center space-y-4">
-        {user?.image ? (
+        {imgSrc ? (
           <div className="relative h-32 w-32 rounded-full overflow-hidden border-4 border-blue-100">
             <Image
-              src={user.image}
-              alt={user.name || "Profile picture"}
+              src={imgSrc}
+              alt={user?.name || "Profile picture"}
               fill
               className="object-cover"
               unoptimized={true}
@@ -57,16 +82,23 @@ export function UserProfile({ session }: UserProfileProps) {
         </div>
       </div>
 
-      {/* Debug section - shows complete session data */}
-      <div className="mt-4 p-4 bg-gray-100 rounded-md text-xs overflow-auto">
+      {/* Debug section - shows complete session data with better styling */}
+      <div className="mt-4 p-4 bg-white rounded-md text-xs overflow-auto border border-gray-200">
         <details>
-          <summary className="cursor-pointer text-blue-600">
+          <summary className="cursor-pointer text-blue-600 font-medium">
             Session Data
           </summary>
-          <pre className="mt-2 whitespace-pre-wrap overflow-x-auto">
+          <pre className="mt-2 whitespace-pre-wrap overflow-x-auto text-black font-mono">
             {JSON.stringify(session, null, 2)}
           </pre>
         </details>
+
+        {imgSrc && (
+          <div className="mt-2 pt-2 border-t border-gray-200">
+            <p className="text-gray-800 font-medium mb-1">Image URL:</p>
+            <p className="text-black break-all font-mono">{imgSrc}</p>
+          </div>
+        )}
       </div>
 
       <div className="pt-4 border-t border-gray-200">
