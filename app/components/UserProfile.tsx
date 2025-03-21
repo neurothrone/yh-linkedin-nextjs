@@ -3,7 +3,7 @@
 import { Session } from "next-auth";
 import Image from "next/image";
 import { SignOutButton } from "./SignOutButton";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 interface UserProfileProps {
   session: Session;
@@ -11,31 +11,22 @@ interface UserProfileProps {
 
 export function UserProfile({ session }: UserProfileProps) {
   const { user } = session;
-  const [imageError, setImageError] = useState(false);
-  const [imageUrl, setImageUrl] = useState<string | null>(user?.image || null);
 
   useEffect(() => {
-    console.log("Session user:", user);
-    console.log("Image URL:", user?.image);
-    console.log("LinkedIn profile:", user?.linkedInProfile);
-  }, [user]);
-
-  const handleImageError = () => {
-    console.error("Error loading image:", imageUrl);
-    setImageError(true);
-  };
+    // Log session data for debugging
+    console.log("Session:", session);
+  }, [session]);
 
   return (
     <div className="w-full max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6 space-y-6">
       <div className="flex flex-col items-center space-y-4">
-        {imageUrl && !imageError ? (
+        {user?.image ? (
           <div className="relative h-32 w-32 rounded-full overflow-hidden border-4 border-blue-100">
             <Image
-              src={imageUrl}
-              alt={user?.name || "Profile picture"}
+              src={user.image}
+              alt={user.name || "Profile picture"}
               fill
               className="object-cover"
-              onError={handleImageError}
               unoptimized={true}
             />
           </div>
@@ -66,21 +57,17 @@ export function UserProfile({ session }: UserProfileProps) {
         </div>
       </div>
 
-      {/* Debug section - will show in development */}
-      {process.env.NODE_ENV === "development" && (
-        <div className="mt-4 p-4 bg-gray-100 rounded-md text-xs overflow-auto">
-          <h3 className="font-bold mb-2">Debug Info:</h3>
-          <p>Image URL: {imageUrl || "Not available"}</p>
-          <details>
-            <summary className="cursor-pointer text-blue-600">
-              Session Data
-            </summary>
-            <pre className="mt-2 whitespace-pre-wrap overflow-x-auto">
-              {JSON.stringify(session, null, 2)}
-            </pre>
-          </details>
-        </div>
-      )}
+      {/* Debug section - shows complete session data */}
+      <div className="mt-4 p-4 bg-gray-100 rounded-md text-xs overflow-auto">
+        <details>
+          <summary className="cursor-pointer text-blue-600">
+            Session Data
+          </summary>
+          <pre className="mt-2 whitespace-pre-wrap overflow-x-auto">
+            {JSON.stringify(session, null, 2)}
+          </pre>
+        </details>
+      </div>
 
       <div className="pt-4 border-t border-gray-200">
         <div className="flex justify-center">
